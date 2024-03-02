@@ -13,6 +13,7 @@ func GetThumbnail(videoId string) ([]byte, error) {
 		log.Println("Error while downloading video with id - ", videoId)
 		return nil, fmt.Errorf("Error while downloading video | Video id - %s", videoId)
 	}
+	defer resp.Body.Close()
 
 	thumblenailBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
