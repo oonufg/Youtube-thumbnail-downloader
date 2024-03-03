@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"log"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
 	INIT_TABLE = `
-		CREATE TABLE thumbnails IF NOT EXISTS(
+		CREATE TABLE  IF NOT EXISTS thumbnails(
 			video_id TEXT,
 			thumbnail BLOB
 		);
@@ -25,17 +27,17 @@ const (
 		SELECT EXISTS(SELECT video_id FROM thumbnails WHERE video_id = ?);`
 )
 
-func initTable(ctx context.Context, db *sql.DB) {
-	_, err := db.ExecContext(ctx, INIT_TABLE)
+func initTable(db *sql.DB) {
+	_, err := db.Exec(INIT_TABLE)
 	if err != nil {
-		log.Fatalln("Error while init sqlite cache")
+		log.Fatalf("Error while init sqlite cache %w", err)
 	}
 }
 
-func cacheThumbnail(ctx context.Context, db *sql.DB, video_id string, thumbnailBytes []byte) error {
+func cacheThumbnail(ctx context.Context, db *sql.DB, videoId string, thumbnailBytes []byte) error {
 	transaction, err := db.BeginTx(ctx, nil)
 	if err != nil {
-		log.Printf("Error while caching thumbnail | %s\n", video_id)
+		log.Printf("Error while caching thumbnail | %s\n", videoId)
 		return err
 	}
 
@@ -45,10 +47,11 @@ func cacheThumbnail(ctx context.Context, db *sql.DB, video_id string, thumbnailB
 		}
 	}()
 
-	_, err = transaction.Exec(CACHE_THUMBNAIL, video_id, thumbnailBytes)
+	_, err = transaction.Exec(CACHE_THUMBNAIL, videoId, thumbnailBytes)
 
 	if err != nil {
 		transaction.Rollback()
+		return err
 	}
 
 	err = transaction.Commit()
@@ -72,6 +75,7 @@ func getThumbnailFromCache(ctx context.Context, db *sql.DB, videoId string) ([]b
 		log.Printf("Error reading getting thumbnail from cache | %s\n", videoId)
 		return nil, err
 	}
+	transaction.Commit()
 	return thumbnailBytes, nil
 }
 
@@ -89,5 +93,6 @@ func isThumbnailCached(ctx context.Context, db *sql.DB, videoId string) bool {
 		log.Printf("Error while checking thumbnail from cache | %s\n", videoId)
 		return false
 	}
+	transaction.Commit()
 	return isThumbnailCached
 }
