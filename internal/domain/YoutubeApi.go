@@ -15,11 +15,11 @@ func GetThumbnail(videoId string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	thumblenailBytes, err := io.ReadAll(resp.Body)
+	thumbnailsBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error while reading bytes from video with id - ", videoId)
 		return nil, fmt.Errorf("Error while read response | Video id - %s", videoId)
 	}
 
-	return thumblenailBytes, nil
+	return thumbnailsBytes, nil
 }

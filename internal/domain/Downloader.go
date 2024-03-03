@@ -11,18 +11,24 @@ import (
 	"sync"
 )
 
-func DownloadThumblenailsAsync(ctx context.Context, videoIds []string) {
+func DownloadThumbnailsAsync(ctx context.Context, videoIds []string) {
 	wg := new(sync.WaitGroup)
-	fmt.Println(len(videoIds))
 	wg.Add(len(videoIds))
+
 	for _, videoId := range videoIds {
 		go downloadAsyncWrapper(ctx, wg, videoId)
 	}
 	wg.Wait()
 }
 
+func DownloadThumbnails(ctx context.Context, videoIds []string) {
+	for _, videoId := range videoIds {
+		DownloadThumbnail(videoId)
+	}
+}
+
 func downloadAsyncWrapper(ctx context.Context, wg *sync.WaitGroup, videoId string) {
-	DownloadThumblenail(videoId)
+	DownloadThumbnail(videoId)
 	defer wg.Done()
 
 	select {
@@ -34,11 +40,11 @@ func downloadAsyncWrapper(ctx context.Context, wg *sync.WaitGroup, videoId strin
 	}
 }
 
-func DownloadThumblenail(videoId string) error {
-	log.Printf("Start downloading thumblenail | %s... \n", videoId)
+func DownloadThumbnail(videoId string) error {
+	log.Printf("Start downloading thumbnails | %s... \n", videoId)
 
 	currentWorkDir, _ := os.Getwd()
-	downloadDir := fmt.Sprintf("%s/YoutubeThumblenails", currentWorkDir)
+	downloadDir := fmt.Sprintf("%s/YoutubeThumbnails", currentWorkDir)
 	filepath := fmt.Sprintf("%s/%s.jpg", downloadDir, videoId)
 	_, err := os.Stat(filepath)
 	var file *os.File
@@ -49,9 +55,9 @@ func DownloadThumblenail(videoId string) error {
 		return errors.New("File already exists")
 	}
 
-	thumbelnailBytes, _ := GetThumbnail(videoId)
-	io.Copy(file, bytes.NewReader(thumbelnailBytes))
+	thumbnailsBytes, _ := GetThumbnail(videoId)
+	io.Copy(file, bytes.NewReader(thumbnailsBytes))
 
-	log.Printf("Finished downloading thumblenail | %s\n", videoId)
+	log.Printf("Finished downloading thumbnails | %s\n", videoId)
 	return nil
 }
