@@ -3,17 +3,13 @@ package main
 import (
 	"YoutubeThumbnailDownloader/internal/domain"
 	"YoutubeThumbnailDownloader/internal/persistence"
-
 	"context"
-	"log"
 )
 
 func main() {
-	cache, err := persistence.New("cache.sqlite")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	tBytes, _ := domain.GetThumbnail("aPBKWTNGylk")
-	cache.CacheThumbnail(context.TODO(), "aPBKWTNGylk", tBytes)
+	cache, _ := persistence.New("cache.sqlite")
+	videos := [1]string{"wC9nSR73_HU"}
+	service := domain.New(cache)
+	service.DownloadThumbnails(context.Background(), videos[:])
 
 }

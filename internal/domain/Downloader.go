@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"YoutubeThumbnailDownloader/internal/persistence"
 	"bytes"
 	"context"
 	"errors"
@@ -11,24 +12,32 @@ import (
 	"sync"
 )
 
-func DownloadThumbnailsAsync(ctx context.Context, videoIds []string) {
+type ThumbnailService struct {
+	cache persistence.ThumbnailCache
+}
+
+func (thumbnailService *ThumbnailService) DownloadThumbnailsAsync(ctx context.Context, videoIds []string) {
 	wg := new(sync.WaitGroup)
 	wg.Add(len(videoIds))
 
 	for _, videoId := range videoIds {
-		go downloadAsyncWrapper(ctx, wg, videoId)
+		go thumbnailService.downloadAsyncWrapper(ctx, wg, videoId)
 	}
 	wg.Wait()
 }
 
-func DownloadThumbnails(ctx context.Context, videoIds []string) {
+func New(cache persistence.ThumbnailCache) *ThumbnailService {
+	return &ThumbnailService{cache: cache}
+}
+
+func (thumbnailService *ThumbnailService) DownloadThumbnails(ctx context.Context, videoIds []string) {
 	for _, videoId := range videoIds {
-		DownloadThumbnail(videoId)
+		thumbnailService.downloadThumbnail(videoId)
 	}
 }
 
-func downloadAsyncWrapper(ctx context.Context, wg *sync.WaitGroup, videoId string) {
-	DownloadThumbnail(videoId)
+func (thumbnailService *ThumbnailService) downloadAsyncWrapper(ctx context.Context, wg *sync.WaitGroup, videoId string) {
+	thumbnailService.downloadThumbnail(videoId)
 	defer wg.Done()
 
 	select {
@@ -40,7 +49,7 @@ func downloadAsyncWrapper(ctx context.Context, wg *sync.WaitGroup, videoId strin
 	}
 }
 
-func DownloadThumbnail(videoId string) error {
+func (thumbnailService *ThumbnailService) downloadThumbnail(videoId string) error {
 	log.Printf("Start downloading thumbnails | %s... \n", videoId)
 
 	currentWorkDir, _ := os.Getwd()
@@ -55,9 +64,15 @@ func DownloadThumbnail(videoId string) error {
 		return errors.New("File already exists")
 	}
 
-	thumbnailsBytes, _ := GetThumbnail(videoId)
-	io.Copy(file, bytes.NewReader(thumbnailsBytes))
+	var thumbnailsBytes []byte
+	if thumbnailService.cache.IsThumbnailCached(videoId) {
+		thumbnailsBytes = thumbnailService.cache.GetThumbnail(context.TODO(), videoId)
+	} else {
+		thumbnailsBytes, _ = GetThumbnail(videoId)
+		thumbnailService.cache.CacheThumbnail(context.TODO(), videoId, thumbnailsBytes)
+	}
 
+	io.Copy(file, bytes.NewReader(thumbnailsBytes))
 	log.Printf("Finished downloading thumbnails | %s\n", videoId)
 	return nil
 }

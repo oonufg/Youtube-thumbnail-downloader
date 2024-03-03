@@ -52,8 +52,8 @@ func (cache *SqliteCache) GetThumbnail(ctx context.Context, videoId string) []by
 	return thumbnailBytes
 }
 
-func (cache *SqliteCache) IsThumbnailCached(ctx context.Context, videoId string) bool {
-	return isThumbnailCached(ctx, cache.db, videoId)
+func (cache *SqliteCache) IsThumbnailCached(videoId string) bool {
+	return isThumbnailCached(context.TODO(), cache.db, videoId)
 }
 
 func (cache *SqliteCache) initTable() {
