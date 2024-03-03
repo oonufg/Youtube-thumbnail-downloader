@@ -1,2 +1,6 @@
 /.vscode
 /YoutubeThumblenails
+/build
+
+go.sum
+main
