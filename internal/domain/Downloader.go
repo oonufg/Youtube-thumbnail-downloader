@@ -4,7 +4,6 @@ import (
 	"YoutubeThumbnailDownloader/internal/persistence"
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -22,7 +21,7 @@ func (thumbnailService *ThumbnailDownloader) DownloadThumbnailsAsync(ctx context
 	wg.Add(len(videoIds))
 
 	for _, videoId := range videoIds {
-		go thumbnailService.downloadAsyncWrapper(ctx, wg, videoId)
+		go thumbnailService.downloadThumbnailAsyncWrapper(ctx, wg, videoId)
 	}
 	wg.Wait()
 }
@@ -40,7 +39,7 @@ func (thumbnailService *ThumbnailDownloader) DownloadThumbnails(ctx context.Cont
 	}
 }
 
-func (thumbnailService *ThumbnailDownloader) downloadAsyncWrapper(ctx context.Context, wg *sync.WaitGroup, videoId string) {
+func (thumbnailService *ThumbnailDownloader) downloadThumbnailAsyncWrapper(ctx context.Context, wg *sync.WaitGroup, videoId string) {
 	thumbnailService.downloadThumbnail(videoId)
 	defer wg.Done()
 
@@ -63,7 +62,8 @@ func (thumbnailService *ThumbnailDownloader) downloadThumbnail(videoId string) e
 	if os.IsNotExist(err) {
 		file, _ = os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	} else {
-		return errors.New("File already exists")
+		log.Printf("Thumbnail already been downloaded | %s\n", videoId)
+		return nil
 	}
 
 	var thumbnailsBytes []byte

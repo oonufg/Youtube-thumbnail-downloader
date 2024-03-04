@@ -1,0 +1,15 @@
+syntax = "proto3";
+package YtThumbGRPC
+
+option go_package = "./;YtThumbGRPC"
+
+service YtThumbGRPC{
+    rpc DownloadThumbnails(DownloadThumbnailsRequest) returns (Empty){};
+    rpc DownloadThumbnailsAsync(DownloadThumbnailsRequest) returns (Empty){};
+}
+
+message DownloadThumbnailsRequest{
+    repeated string videoId = 1;
+}
+
+message Empty{}

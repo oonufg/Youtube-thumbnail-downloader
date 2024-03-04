@@ -1,4 +1,4 @@
-package persistence
+package cache
 
 import (
 	"context"
@@ -19,7 +19,7 @@ type SqliteCache struct {
 	db *sql.DB
 }
 
-func New(path string) (*SqliteCache, error) {
+func NewCache(path string) (*SqliteCache, error) {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, fmt.Errorf("Can't open database: %w", err)
@@ -29,7 +29,7 @@ func New(path string) (*SqliteCache, error) {
 		return nil, fmt.Errorf("Can't connect to database: %w", err)
 	}
 	sqliteCache := &SqliteCache{db: db}
-	sqliteCache.initTable()
+	sqliteCache.initTableIfNotExists()
 
 	return sqliteCache, nil
 }
@@ -56,6 +56,6 @@ func (cache *SqliteCache) IsThumbnailCached(videoId string) bool {
 	return isThumbnailCached(context.TODO(), cache.db, videoId)
 }
 
-func (cache *SqliteCache) initTable() {
-	initTable(cache.db)
+func (cache *SqliteCache) initTableIfNotExists() {
+	initTableIfNotExists(cache.db)
 }

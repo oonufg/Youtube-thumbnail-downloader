@@ -1,4 +1,4 @@
-package persistence
+package cache
 
 import (
 	"context"
@@ -27,7 +27,7 @@ const (
 		SELECT EXISTS(SELECT video_id FROM thumbnails WHERE video_id = ?);`
 )
 
-func initTable(db *sql.DB) {
+func initTableIfNotExists(db *sql.DB) {
 	_, err := db.Exec(INIT_TABLE)
 	if err != nil {
 		log.Fatalf("Error while init sqlite cache %w\n", err)
