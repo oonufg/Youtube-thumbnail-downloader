@@ -13,7 +13,8 @@ import (
 )
 
 type ThumbnailService struct {
-	cache persistence.ThumbnailCache
+	cache       persistence.ThumbnailCache
+	downloadDir string
 }
 
 func (thumbnailService *ThumbnailService) DownloadThumbnailsAsync(ctx context.Context, videoIds []string) {
@@ -26,8 +27,11 @@ func (thumbnailService *ThumbnailService) DownloadThumbnailsAsync(ctx context.Co
 	wg.Wait()
 }
 
-func New(cache persistence.ThumbnailCache) *ThumbnailService {
-	return &ThumbnailService{cache: cache}
+func New(downloadDir string, cache persistence.ThumbnailCache) *ThumbnailService {
+	return &ThumbnailService{
+		downloadDir: downloadDir,
+		cache:       cache,
+	}
 }
 
 func (thumbnailService *ThumbnailService) DownloadThumbnails(ctx context.Context, videoIds []string) {
@@ -52,9 +56,7 @@ func (thumbnailService *ThumbnailService) downloadAsyncWrapper(ctx context.Conte
 func (thumbnailService *ThumbnailService) downloadThumbnail(videoId string) error {
 	log.Printf("Start downloading thumbnails | %s... \n", videoId)
 
-	currentWorkDir, _ := os.Getwd()
-	downloadDir := fmt.Sprintf("%s/YoutubeThumbnails", currentWorkDir)
-	filepath := fmt.Sprintf("%s/%s.jpg", downloadDir, videoId)
+	filepath := fmt.Sprintf("%s/%s.jpg", thumbnailService.downloadDir, videoId)
 	_, err := os.Stat(filepath)
 	var file *os.File
 
@@ -66,6 +68,7 @@ func (thumbnailService *ThumbnailService) downloadThumbnail(videoId string) erro
 
 	var thumbnailsBytes []byte
 	if thumbnailService.cache.IsThumbnailCached(videoId) {
+		log.Printf("Getting thumbnail from cache | %s\n", videoId)
 		thumbnailsBytes = thumbnailService.cache.GetThumbnail(context.TODO(), videoId)
 	} else {
 		thumbnailsBytes, _ = GetThumbnail(videoId)

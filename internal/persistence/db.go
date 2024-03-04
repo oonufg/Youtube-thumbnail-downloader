@@ -30,7 +30,7 @@ const (
 func initTable(db *sql.DB) {
 	_, err := db.Exec(INIT_TABLE)
 	if err != nil {
-		log.Fatalf("Error while init sqlite cache %w", err)
+		log.Fatalf("Error while init sqlite cache %w\n", err)
 	}
 }
 
