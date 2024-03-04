@@ -12,12 +12,12 @@ import (
 	"sync"
 )
 
-type ThumbnailService struct {
+type ThumbnailDownloader struct {
 	cache       persistence.ThumbnailCache
 	downloadDir string
 }
 
-func (thumbnailService *ThumbnailService) DownloadThumbnailsAsync(ctx context.Context, videoIds []string) {
+func (thumbnailService *ThumbnailDownloader) DownloadThumbnailsAsync(ctx context.Context, videoIds []string) {
 	wg := new(sync.WaitGroup)
 	wg.Add(len(videoIds))
 
@@ -27,20 +27,20 @@ func (thumbnailService *ThumbnailService) DownloadThumbnailsAsync(ctx context.Co
 	wg.Wait()
 }
 
-func New(downloadDir string, cache persistence.ThumbnailCache) *ThumbnailService {
-	return &ThumbnailService{
+func New(downloadDir string, cache persistence.ThumbnailCache) *ThumbnailDownloader {
+	return &ThumbnailDownloader{
 		downloadDir: downloadDir,
 		cache:       cache,
 	}
 }
 
-func (thumbnailService *ThumbnailService) DownloadThumbnails(ctx context.Context, videoIds []string) {
+func (thumbnailService *ThumbnailDownloader) DownloadThumbnails(ctx context.Context, videoIds []string) {
 	for _, videoId := range videoIds {
 		thumbnailService.downloadThumbnail(videoId)
 	}
 }
 
-func (thumbnailService *ThumbnailService) downloadAsyncWrapper(ctx context.Context, wg *sync.WaitGroup, videoId string) {
+func (thumbnailService *ThumbnailDownloader) downloadAsyncWrapper(ctx context.Context, wg *sync.WaitGroup, videoId string) {
 	thumbnailService.downloadThumbnail(videoId)
 	defer wg.Done()
 
@@ -53,7 +53,7 @@ func (thumbnailService *ThumbnailService) downloadAsyncWrapper(ctx context.Conte
 	}
 }
 
-func (thumbnailService *ThumbnailService) downloadThumbnail(videoId string) error {
+func (thumbnailService *ThumbnailDownloader) downloadThumbnail(videoId string) error {
 	log.Printf("Start downloading thumbnails | %s... \n", videoId)
 
 	filepath := fmt.Sprintf("%s/%s.jpg", thumbnailService.downloadDir, videoId)
