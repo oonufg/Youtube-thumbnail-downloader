@@ -1,9 +1,8 @@
 package main
 
 import (
-	"YoutubeThumbnailDownloader/internal/domain"
-	"YoutubeThumbnailDownloader/internal/persistence"
-	"context"
+	_ "YoutubeThumbnailDownloader/internal/cache"
+	_ "YoutubeThumbnailDownloader/internal/domain"
 	"fmt"
 	"log"
 	"os"
@@ -11,13 +10,6 @@ import (
 
 func main() {
 	CreateAllNeededIfNotExists()
-	cache, _ := persistence.NewCache("cache.sqlite")
-	videos := [1]string{"wC9nSR73_HU"}
-	currentWorkDir, _ := os.Getwd()
-	downloadDir := fmt.Sprintf("%s/YoutubeThumbnails", currentWorkDir)
-
-	service := domain.New(downloadDir, cache)
-	service.DownloadThumbnails(context.Background(), videos[:])
 
 }
 
@@ -32,4 +24,10 @@ func CreateAllNeededIfNotExists() {
 			}
 		}
 	}
+}
+
+func GetDirToDownloadThumbnails() string {
+	currentWorkDir, _ := os.Getwd()
+	downloadDir := fmt.Sprintf("%s/YoutubeThumbnails", currentWorkDir)
+	return downloadDir
 }
