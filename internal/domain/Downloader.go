@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"YoutubeThumbnailDownloader/internal/persistence"
+	"YoutubeThumbnailDownloader/internal/cache"
 	"bytes"
 	"context"
 	"fmt"
@@ -12,7 +12,7 @@ import (
 )
 
 type ThumbnailDownloader struct {
-	cache       persistence.ThumbnailCache
+	cache       cache.ThumbnailCache
 	downloadDir string
 }
 
@@ -26,7 +26,7 @@ func (thumbnailService *ThumbnailDownloader) DownloadThumbnailsAsync(ctx context
 	wg.Wait()
 }
 
-func New(downloadDir string, cache persistence.ThumbnailCache) *ThumbnailDownloader {
+func New(downloadDir string, cache cache.ThumbnailCache) *ThumbnailDownloader {
 	return &ThumbnailDownloader{
 		downloadDir: downloadDir,
 		cache:       cache,

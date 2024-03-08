@@ -1,7 +1,7 @@
 syntax = "proto3";
-package YtThumbGRPC
+package YtThumbGRPC;
 
-option go_package = "./;YtThumbGRPC"
+option go_package = "./;YtThumbGRPC";
 
 service YtThumbGRPC{
     rpc DownloadThumbnails(DownloadThumbnailsRequest) returns (Empty){};
