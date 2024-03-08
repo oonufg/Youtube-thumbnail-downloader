@@ -16,6 +16,13 @@ type ThumbnailDownloader struct {
 	downloadDir string
 }
 
+func New(downloadDir string, cache cache.ThumbnailCache) *ThumbnailDownloader {
+	return &ThumbnailDownloader{
+		downloadDir: downloadDir,
+		cache:       cache,
+	}
+}
+
 func (thumbnailService *ThumbnailDownloader) DownloadThumbnailsAsync(ctx context.Context, videoIds []string) {
 	wg := new(sync.WaitGroup)
 	wg.Add(len(videoIds))
@@ -24,13 +31,6 @@ func (thumbnailService *ThumbnailDownloader) DownloadThumbnailsAsync(ctx context
 		go thumbnailService.downloadThumbnailAsyncWrapper(ctx, wg, videoId)
 	}
 	wg.Wait()
-}
-
-func New(downloadDir string, cache cache.ThumbnailCache) *ThumbnailDownloader {
-	return &ThumbnailDownloader{
-		downloadDir: downloadDir,
-		cache:       cache,
-	}
 }
 
 func (thumbnailService *ThumbnailDownloader) DownloadThumbnails(ctx context.Context, videoIds []string) {

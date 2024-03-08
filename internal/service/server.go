@@ -17,8 +17,10 @@ type Server struct {
 	gRpcServer     *grpc.Server
 }
 
-func MakeServer(ytThumbHandler *YtThumbHandler) *Server {
+func MakeServer(ytThumbHandler *YtThumbHandler, gRpcAddr, gRpcPort string) *Server {
 	return &Server{
+		GRPCAdder:      gRpcAddr,
+		GRPCPort:       gRpcPort,
 		ytThumbHandler: ytThumbHandler,
 	}
 }
@@ -33,9 +35,12 @@ func (server *Server) Run(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to start gRPC at %s\n", gRpcFullAddr)
 	}
-
-	gRpcServer.Serve(listener)
-	server.gRpcServer = gRpcServer
+	log.Printf("Start listening gRPC on %s ...", gRpcFullAddr)
+	err = gRpcServer.Serve(listener)
+	if err != nil {
+		log.Fatalf("Failed to listen gRPC on %s", gRpcFullAddr)
+		server.gRpcServer = gRpcServer
+	}
 }
 
 func (server *Server) Shutdown() {
