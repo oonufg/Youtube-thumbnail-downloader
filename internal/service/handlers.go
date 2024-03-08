@@ -17,12 +17,12 @@ func MakeYtThumbHandler(thumbDownload *domain.ThumbnailDownloader) *YtThumbHandl
 	}
 }
 
-func (ytThumbHandler *YtThumbHandler) DownloadThumbnails(ctx context.Context, request *protobuff.DownloadThumbnailsRequest) *protobuff.Empty {
+func (ytThumbHandler *YtThumbHandler) DownloadThumbnails(ctx context.Context, request *protobuff.DownloadThumbnailsRequest) (*protobuff.Empty, error) {
 	ytThumbHandler.thumbDownloader.DownloadThumbnails(ctx, request.GetVideoId())
-	return &protobuff.Empty{}
+	return &protobuff.Empty{}, nil
 }
 
-func (ytThumbHandler *YtThumbHandler) DownloadThumbnailsAsync(ctx context.Context, request *protobuff.DownloadThumbnailsRequest) *protobuff.Empty {
+func (ytThumbHandler *YtThumbHandler) DownloadThumbnailsAsync(ctx context.Context, request *protobuff.DownloadThumbnailsRequest) (*protobuff.Empty, error) {
 	ytThumbHandler.thumbDownloader.DownloadThumbnailsAsync(ctx, request.GetVideoId())
-	return &protobuff.Empty{}
+	return &protobuff.Empty{}, nil
 }
