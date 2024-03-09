@@ -5,30 +5,59 @@ import (
 	_ "YoutubeThumbnailDownloader/internal/cache"
 	"YoutubeThumbnailDownloader/internal/domain"
 	_ "YoutubeThumbnailDownloader/internal/domain"
-	server "YoutubeThumbnailDownloader/internal/service"
+	server "YoutubeThumbnailDownloader/internal/service/server"
 	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 func main() {
 	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	sigChan := getListenOsSigChan()
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	go RunServer(ctx, wg)
+
+	<-sigChan
+	cancel()
+	wg.Wait()
+}
+
+func getListenOsSigChan() chan os.Signal {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+	return sigChan
+}
+
+func RunServer(ctx context.Context, wg *sync.WaitGroup) {
 	cache, _ := cache.NewCache("cache.sqlite")
 	downloader := domain.New("YoutubeThumbnails", cache)
 	handler := server.MakeYtThumbHandler(downloader)
 	server := server.MakeServer(handler, "127.0.0.1", "8080")
-	server.Run(ctx)
+
+	go server.Run(ctx)
+	<-ctx.Done()
+	server.Shutdown()
+	wg.Done()
 }
 
-func CreateAllNeededIfNotExists() {
+func CreateAllNecessaryIfNotExists() {
 	currentWorkDir, _ := os.Getwd()
 	downloadDir := fmt.Sprintf("%s/YoutubeThumbnails", currentWorkDir)
 	if _, err := os.Stat(downloadDir); err != nil {
 		if os.IsNotExist(err) {
 			err = os.Mkdir("YoutubeThumbnails", 0777)
 			if err != nil {
-				log.Fatalln("YoutubeThumbnails folder not created")
+				log.Fatalln("Can't create YoutubeThumbnails folder")
 			}
 		}
 	}

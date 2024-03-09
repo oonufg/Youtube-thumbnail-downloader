@@ -36,10 +36,10 @@ func (server *Server) Run(ctx context.Context) {
 		log.Fatalf("Failed to start gRPC at %s\n", gRpcFullAddr)
 	}
 	log.Printf("Start listening gRPC on %s ...", gRpcFullAddr)
+	server.gRpcServer = gRpcServer
 	err = gRpcServer.Serve(listener)
 	if err != nil {
 		log.Fatalf("Failed to listen gRPC on %s", gRpcFullAddr)
-		server.gRpcServer = gRpcServer
 	}
 }
 
