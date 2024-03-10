@@ -34,9 +34,12 @@ func (client *gRpcClient) DownloadThumbnails(ctx context.Context, videoIds []str
 }
 
 func (client *gRpcClient) DownloadThumbnailsAsync(ctx context.Context, videoIds []string) {
-	client.client.DownloadThumbnailsAsync(ctx, &protobuff.DownloadThumbnailsRequest{
+	_, err := client.client.DownloadThumbnailsAsync(ctx, &protobuff.DownloadThumbnailsRequest{
 		VideoId: videoIds,
 	})
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (client *gRpcClient) connect() {

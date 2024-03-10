@@ -5,6 +5,7 @@ import (
 	_ "YoutubeThumbnailDownloader/internal/cache"
 	"YoutubeThumbnailDownloader/internal/domain"
 	_ "YoutubeThumbnailDownloader/internal/domain"
+	"YoutubeThumbnailDownloader/internal/service/client"
 	server "YoutubeThumbnailDownloader/internal/service/server"
 	"context"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -21,8 +23,10 @@ func main() {
 	sigChan := getListenOsSigChan()
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
-	go RunServer(ctx, wg)
-
+	RunServer(ctx, wg)
+	time.Sleep(10000)
+	cli := client.NewClient("127.0.0.1", "8080")
+	go cli.Execute(ctx, os.Args[1:])
 	<-sigChan
 	cancel()
 	wg.Wait()
