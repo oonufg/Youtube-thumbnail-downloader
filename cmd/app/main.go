@@ -23,10 +23,12 @@ func main() {
 	sigChan := getListenOsSigChan()
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
-	RunServer(ctx, wg)
-	time.Sleep(10000)
+	go RunServer(ctx, wg)
+	time.Sleep(1 * time.Second)
+
 	cli := client.NewClient("127.0.0.1", "8080")
 	go cli.Execute(ctx, os.Args[1:])
+
 	<-sigChan
 	cancel()
 	wg.Wait()
