@@ -32,6 +32,7 @@ func (cli *Cli) Execute(ctx context.Context, cliArgs []string) {
 	} else {
 		cli.gRpcClient.DownloadThumbnails(ctx, videoIds)
 	}
+
 }
 
 func (cli *Cli) findKeys(cliArgs []string) map[string]struct{} {

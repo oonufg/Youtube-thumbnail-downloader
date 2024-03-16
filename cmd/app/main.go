@@ -19,19 +19,17 @@ import (
 
 func main() {
 	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	sigChan := getListenOsSigChan()
+	//ctx, cancel := context.WithCancel(ctx)
+	//sigChan := getListenOsSigChan()
+	//executeChan := make(chan bool)
+
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	go RunServer(ctx, wg)
 	time.Sleep(1 * time.Second)
 
 	cli := client.NewClient("127.0.0.1", "8080")
-	go cli.Execute(ctx, os.Args[1:])
-
-	<-sigChan
-	cancel()
-	wg.Wait()
+	cli.Execute(ctx, os.Args[1:])
 }
 
 func getListenOsSigChan() chan os.Signal {
